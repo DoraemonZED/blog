@@ -1,0 +1,13 @@
+{
+  "id": "java-jvm-runtime",
+  "category": "java",
+  "title": "JVM 原理与生产故障诊断",
+  "date": "2024-03-11",
+  "views": 9,
+  "likes": 5,
+  "updatedAt": "2024-03-11T09:42:00.000Z",
+  "author": "杨伟",
+  "summary": "从类加载、运行时内存和 JIT，到垃圾回收、OOM、线程与性能诊断的 JVM 实战路线。",
+  "tags": "Java,JVM,GC,JIT,性能诊断",
+  "contentFile": "index.md"
+}

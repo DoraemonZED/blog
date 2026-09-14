@@ -1,0 +1,13 @@
+{
+  "id": "spring-framework-core",
+  "category": "java",
+  "title": "Spring Framework 核心原理与应用",
+  "date": "2024-08-14",
+  "views": 9,
+  "likes": 6,
+  "updatedAt": "2024-08-14T13:12:00.000Z",
+  "author": "杨伟",
+  "summary": "串联 IoC、Bean 生命周期、AOP、MVC、事务、缓存、异步任务、WebFlux 与测试。",
+  "tags": "Java,Spring,IoC,AOP,Spring MVC",
+  "contentFile": "index.md"
+}

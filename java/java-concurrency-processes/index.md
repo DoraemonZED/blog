@@ -1,0 +1,72 @@
+## 1. 并发的正确起点
+
+并发程序首先要保证可见性、有序性和原子性，然后才是速度。Java 内存模型通过 happens-before 规则定义线程之间何时能看到彼此的写入。线程启动与结束、监视器锁、`volatile`、并发工具类都建立了特定的可见性关系。
+
+`volatile` 能保证可见性和一定的有序性，但 `count++` 仍是读取、计算、写入三个步骤，并不原子。
+
+```java
+private final AtomicLong sequence = new AtomicLong();
+
+public long nextId() {
+    return sequence.incrementAndGet();
+}
+```
+
+## 2. 锁与共享状态
+
+优先减少共享可变状态，其次使用线程安全的高层抽象，最后才手写锁。`synchronized` 适合清晰的互斥边界；`ReentrantLock` 在需要可中断获取、超时、公平性或多个条件队列时更灵活。
+
+锁的范围既不能大到串行化整个系统，也不能小到破坏业务不变量。数据库余额扣减、库存变更等跨资源操作，不能只靠单 JVM 锁保证。
+
+## 3. 线程池与背压
+
+线程池必须显式配置：核心线程数、最大线程数、队列容量、空闲时间、线程命名和拒绝策略。无界队列会把过载转换为内存风险；无限创建线程会把过载转换为调度和本地内存风险。
+
+CPU 密集任务的并发度通常接近可用核心数；阻塞型任务可以更高，但应由下游容量、连接池和延迟预算共同决定。必须监控活跃线程、队列长度、拒绝次数和任务耗时。
+
+## 4. 异步组合
+
+`CompletableFuture` 适合多个异步步骤的组合。要明确每一步使用哪个执行器、异常在哪里处理、超时如何传播，避免默认公共线程池承载不可控的阻塞任务。
+
+```java
+CompletableFuture<Result> result = CompletableFuture
+    .supplyAsync(this::load, ioExecutor)
+    .thenApply(this::transform)
+    .orTimeout(800, TimeUnit.MILLISECONDS)
+    .exceptionally(this::fallback);
+```
+
+## 5. 虚拟线程
+
+虚拟线程适合大量以阻塞 IO 为主、请求之间相对独立的任务。它改善的是线程承载成本，不会让数据库或远程服务容量变大。连接池、限流、超时和背压仍然不可少。长时间占用监视器或执行本地阻塞操作时，应结合目标 JDK 的行为进行压测。
+
+## 6. 并发故障
+
+- 死锁：线程形成锁等待环；通过固定加锁顺序、超时和减少嵌套锁预防。
+- 活锁：线程持续响应彼此但没有进展；引入随机退避或协调机制。
+- 饥饿：某些任务长期得不到资源；检查优先级、公平性和队列策略。
+- 竞态：结果取决于执行时序；通过原子操作或受保护的不变量消除。
+
+并发测试应重复执行，加入超时，并使用专门工具验证内存模型边界；“运行一百次没出错”不是正确性证明。
+
+## 7. 多进程与 IPC
+
+Java 多进程通过 `ProcessBuilder` 启动子进程。必须并行消费标准输出和错误输出，否则缓冲区写满可能使子进程阻塞。还要处理超时、退出码、进程树终止和临时文件清理。
+
+进程间通信可选择标准流、文件、管道、Socket、HTTP 或消息队列。选择依据是同机还是跨机、数据量、可靠性、延迟和是否需要持久化。文件锁只适合同机协调；分布式实例需要数据库、协调服务或具备正确租约语义的分布式锁。
+
+## 8. 设计检查表
+
+- 哪些状态真的需要共享？
+- 所有线程是否有明确结束条件？
+- 队列是否有界，过载时怎样降级？
+- 超时和取消是否能传递到底层？
+- 是否把下游连接数计入并发预算？
+- 进程异常退出后能否恢复？
+
+## 参考资料
+
+- [Java Concurrency API](https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/util/concurrent/package-summary.html)
+- [Java Process API](https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/Process.html)
+- [Virtual Threads](https://openjdk.org/jeps/444)
+
