@@ -1,0 +1,92 @@
+<h2>1. 先按访问模式选集合</h2>
+<p>集合选型的第一问题不是“哪个更快”，而是数据是否有序、是否允许重复、按什么键查询、是否跨线程共享。</p>
+<table>
+<thead>
+<tr>
+<th>需求</th>
+<th>常用选择</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>按下标访问、尾部追加</td>
+<td><code>ArrayList</code></td>
+<td>连续存储，局部性好</td>
+</tr>
+<tr>
+<td>去重、不要求顺序</td>
+<td><code>HashSet</code></td>
+<td>基于哈希表</td>
+</tr>
+<tr>
+<td>保持插入顺序</td>
+<td><code>LinkedHashMap/Set</code></td>
+<td>额外维护链表</td>
+</tr>
+<tr>
+<td>按键排序</td>
+<td><code>TreeMap/Set</code></td>
+<td>基于有序树</td>
+</tr>
+<tr>
+<td>先进先出</td>
+<td><code>ArrayDeque</code></td>
+<td>通常优于 <code>LinkedList</code></td>
+</tr>
+<tr>
+<td>优先级队列</td>
+<td><code>PriorityQueue</code></td>
+<td>堆结构，不保证整体有序</td>
+</tr>
+<tr>
+<td>并发键值表</td>
+<td><code>ConcurrentHashMap</code></td>
+<td>支持高并发访问</td>
+</tr>
+</tbody></table>
+<h2>2. List、Set 与 Queue</h2>
+<p><code>ArrayList</code> 适合绝大多数列表场景。中间插入需要移动元素，但实际性能仍要结合访问局部性判断。<code>LinkedList</code> 每个节点有额外对象成本，随机访问慢，不能仅凭“插入是 O(1)”就选择它，因为找到插入位置本身可能是 O(n)。</p>
+<p><code>HashSet</code> 通过元素的 <code>hashCode</code> 和 <code>equals</code> 判重。放入集合后修改参与哈希计算的字段，会导致元素难以再次找到。实体作为键时应使用稳定、不可变的标识。</p>
+<h2>3. HashMap 的关键契约</h2>
+<p>哈希表先根据哈希值定位桶，再通过相等判断确定键。正确性依赖：相等对象必须拥有相同哈希值；对象不相等可以发生哈希冲突。</p>
+<pre><code class="language-java">public record UserId(long value) {
+    public UserId {
+        if (value &lt;= 0) throw new IllegalArgumentException("value must be positive");
+    }
+}
+</code></pre>
+<p>不可变 record 很适合作为 Map 键。不要依赖 <code>HashMap</code> 的遍历顺序，也不要在多个线程中无保护地同时修改普通 <code>HashMap</code>。</p>
+<h2>4. 排序与比较</h2>
+<p>自然顺序由 <code>Comparable</code> 定义，外部排序规则由 <code>Comparator</code> 定义。比较器应满足反对称性、传递性，并尽量与 <code>equals</code> 一致。多字段排序可以组合：</p>
+<pre><code class="language-java">Comparator&lt;User&gt; order = Comparator
+    .comparing(User::department)
+    .thenComparing(User::name)
+    .thenComparingLong(User::id);
+</code></pre>
+<h2>5. 并发集合</h2>
+<p><code>ConcurrentHashMap</code> 适合并发查询和更新，但复合操作仍要使用 <code>compute</code>、<code>merge</code>、<code>putIfAbsent</code> 等原子 API。<code>CopyOnWriteArrayList</code> 适合读多写极少、集合较小的监听器场景；每次写都会复制数组，不适合高频写入。</p>
+<p>阻塞队列连接生产者和消费者：有界队列可以形成背压，无界队列可能在流量高峰耗尽内存。线程池队列必须明确容量和拒绝策略。</p>
+<h2>6. 常用工程结构</h2>
+<ul>
+<li>LRU：可使用访问顺序的 <code>LinkedHashMap</code>，生产环境还要考虑并发、容量和过期。</li>
+<li>LFU：需要同时维护频率与同频次顺序，通常优先采用成熟缓存库。</li>
+<li>布隆过滤器：用少量空间判断“一定不存在或可能存在”，存在误判但不会漏判已加入元素。</li>
+<li>位图：适合范围明确的整数集合和状态标记。</li>
+<li>堆：适合 Top K、任务调度和动态中位数问题。</li>
+</ul>
+<h2>7. 性能判断</h2>
+<p>复杂度只是上界模型。真实选择还受对象分配、缓存局部性、装箱、GC、数据规模和并发竞争影响。优化前应先测量；使用 JMH 时要预热并避免死代码消除，不能用一次 <code>System.nanoTime()</code> 循环得出结论。</p>
+<h2>检查表</h2>
+<ul>
+<li>是否真的需要保持顺序？</li>
+<li>键是否不可变并正确实现相等契约？</li>
+<li>是否需要允许 <code>null</code>？</li>
+<li>是否跨线程修改？</li>
+<li>队列是否有界？满时如何处理？</li>
+<li>数据量是否大到需要专用结构？</li>
+</ul>
+<h2>参考资料</h2>
+<ul>
+<li><a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/util/doc-files/coll-overview.html">Java Collections Framework</a></li>
+<li><a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/util/concurrent/package-summary.html">Java 并发集合 API</a></li>
+</ul>

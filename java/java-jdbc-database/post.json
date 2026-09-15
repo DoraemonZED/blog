@@ -1,0 +1,13 @@
+{
+  "id": "java-jdbc-database",
+  "category": "java",
+  "title": "Java JDBC 与数据库工程实践",
+  "date": "2024-06-09",
+  "views": 7,
+  "likes": 4,
+  "updatedAt": "2024-06-09T15:21:00.000Z",
+  "author": "杨伟",
+  "summary": "系统掌握 JDBC、连接池、事务、批处理、索引、锁、主从复制与分库分表。",
+  "tags": "Java,JDBC,数据库,事务,连接池",
+  "contentFile": "index.md"
+}

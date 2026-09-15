@@ -1,0 +1,13 @@
+{
+  "id": "java-language-foundations",
+  "category": "java",
+  "title": "Java 语言基础：从类型系统到模块化",
+  "date": "2024-01-08",
+  "views": 7,
+  "likes": 2,
+  "updatedAt": "2024-01-08T10:18:00.000Z",
+  "author": "杨伟",
+  "summary": "系统梳理 Java 类型系统、面向对象、泛型、反射、函数式编程、现代语法、异常与模块系统。",
+  "tags": "Java,泛型,反射,Lambda,模块化",
+  "contentFile": "index.md"
+}

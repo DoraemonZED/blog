@@ -1,0 +1,13 @@
+{
+  "id": "java-data-access-frameworks",
+  "category": "java",
+  "title": "Java 数据访问：MyBatis、JPA 与多数据源",
+  "date": "2024-10-19",
+  "views": 6,
+  "likes": 3,
+  "updatedAt": "2024-10-19T10:47:00.000Z",
+  "author": "杨伟",
+  "summary": "比较 MyBatis、Spring JDBC、JPA/Hibernate，并覆盖缓存、搜索、多数据源和多租户。",
+  "tags": "Java,MyBatis,JPA,Hibernate,Redis",
+  "contentFile": "index.md"
+}
