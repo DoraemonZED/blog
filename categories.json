@@ -1,11 +1,4 @@
 {
-  "version": 1,
-  "categories": [
-    {
-      "name": "Java 技术体系",
-      "slug": "java",
-      "description": "从语言基础、JVM 与并发，到 Spring、数据访问、微服务和工程化的系统化 Java 指南。",
-      "order": 0
-    }
-  ]
+  "version": 2,
+  "categories": []
 }
