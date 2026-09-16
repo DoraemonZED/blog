@@ -1,4 +1,12 @@
 {
   "version": 2,
-  "categories": []
+  "categories": [
+    {
+      "name": "java开发",
+      "slug": "java",
+      "directoryId": "java",
+      "description": "",
+      "order": 0
+    }
+  ]
 }
